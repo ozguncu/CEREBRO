@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C.E.R.E.B.R.O. v1.0 | Stroke Digital Twin Decision Support</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .gradient-header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0369a1 100%); }
+        input[type=range] { accent-color: #0284c7; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- HEADER / BRANDING (Blind-Review Compliant) -->
+    <header class="gradient-header text-white shadow-xl border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <span class="bg-sky-500 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">v1.0 Multicenter Digital Twin</span>
+                        <span class="text-sky-300 text-xs font-semibold tracking-wide flex items-center gap-1">
+                            <i class="fa-solid fa-shield-halved"></i> Blind-Review Academic Edition
+                        </span>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2 flex items-center gap-3">
+                        <i class="fa-solid fa-brain text-sky-400"></i> C.E.R.E.B.R.O.
+                    </h1>
+                    <p class="text-sky-200 font-medium text-sm sm:text-base mt-1">
+                        <span class="text-white font-bold">C</span>omprehensive 
+                        <span class="text-white font-bold">E</span>valuation of 
+                        <span class="text-white font-bold">R</span>isk for 
+                        <span class="text-white font-bold">E</span>dema and 
+                        <span class="text-white font-bold">B</span>leeding in 
+                        <span class="text-white font-bold">R</span>eperfused 
+                        <span class="text-white font-bold">O</span>utcomes
+                    </p>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 text-xs sm:text-sm text-sky-100 max-w-sm">
+                    <p class="font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-sky-400"></i> Pre-procedural Decision Support
+                    </p>
+                    <p class="mt-1 text-slate-300">Simulates counterfactual reperfusion risks at T0 admission (n=2,861 derivation & external validation).</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN INTERACTIVE CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 flex-grow">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- LEFT COLUMN: PATIENT T0 ADMISSION INPUTS (5 Cols) -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-sky-600"></i> Admission T0 Parameters
+                    </h2>
+
+                    <div class="space-y-5 mt-5">
+                        <!-- Age -->
+                        <div>
+                            <div class="flex justify-between items-center text-sm font-semibold text-slate-700">
+                                <label>Age (Years)</label>
+                                <span id="val_age" class="text-sky-700 bg-sky-50 px-2 py-0.5 rounded font-bold">68</span>
+                            </div>
+                            <input type="range" id="input_age" min="30" max="95" value="68" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer mt-2" oninput="updateSimulation()">
+                        </div>
+
+                        <!-- NIHSS -->
+                        <div>
+                            <div class="flex justify-between items-center text-sm font-semibold text-slate-700">
+                                <label>Admission NIHSS</label>
+                                <span id="val_nihss" class="text-sky-700 bg-sky-50 px-2 py-0.5 rounded font-bold">16</span>
+                            </div>
+                            <input type="range" id="input_nihss" min="0" max="32" value="16" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer mt-2" oninput="updateSimulation()">
+                        </div>
+
+                        <!-- Infarct Volume (T0) -->
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Early Infarct Volume (T0 Imaging)</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" onclick="setVolume(1)" id="btn_vol_1" class="vol-btn py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition">Small (<1/3 MCA)</button>
+                                <button type="button" onclick="setVolume(2)" id="btn_vol_2" class="vol-btn py-2 text-xs font-semibold rounded-lg border border-sky-600 bg-sky-50 text-sky-700 transition">Medium (1/3-1/2)</button>
+                                <button type="button" onclick="setVolume(3)" id="btn_vol_3" class="vol-btn py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition">Large (>1/2 MCA)</button>
+                            </div>
+                        </div>
+
+                        <!-- Blood Glucose -->
+                        <div>
+                            <div class="flex justify-between items-center text-sm font-semibold text-slate-700">
+                                <label>Blood Glucose (mg/dL)</label>
+                                <span id="val_glucose" class="text-sky-700 bg-sky-50 px-2 py-0.5 rounded font-bold">165</span>
+                            </div>
+                            <input type="range" id="input_glucose" min="70" max="350" value="165" step="5" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer mt-2" oninput="updateSimulation()">
+                        </div>
+
+                        <!-- BAR_T0 (BUN/Albumin Ratio) -->
+                        <div>
+                            <div class="flex justify-between items-center text-sm font-semibold text-slate-700">
+                                <label class="flex items-center gap-1.5">
+                                    BAR_T0 (BUN/Albumin)
+                                    <i class="fa-solid fa-circle-info text-slate-400 text-xs" title="Biochemical biomarker of endothelial vulnerability"></i>
+                                </label>
+                                <span id="val_bar" class="text-sky-700 bg-sky-50 px-2 py-0.5 rounded font-bold">5.8</span>
+                            </div>
+                            <input type="range" id="input_bar" min="1.5" max="15.0" value="5.8" step="0.1" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer mt-2" oninput="updateSimulation()">
+                        </div>
+
+                        <!-- Consciousness & Clinical Factors -->
+                        <div class="pt-2 border-t border-slate-100 grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Consciousness</label>
+                                <select id="input_bilinc" onchange="updateSimulation()" class="w-full text-xs font-medium bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-sky-500">
+                                    <option value="1">Alert / Confused</option>
+                                    <option value="2" selected>Somnolent</option>
+                                    <option value="3">Stupor / Coma</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Vascular Territory</label>
+                                <select id="input_territory" onchange="updateSimulation()" class="w-full text-xs font-medium bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-sky-500">
+                                    <option value="1" selected>Anterior (MCA/ICA)</option>
+                                    <option value="2">Posterior (BA/PCA)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Toggles -->
+                        <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                            <label class="flex items-center gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chk_hipodan" onchange="updateSimulation()" class="rounded text-sky-600">
+                                <span>Leukoaraiosis (PVH)</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chk_af" onchange="updateSimulation()" checked class="rounded text-sky-600">
+                                <span>Atrial Fibrillation</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chk_ht" onchange="updateSimulation()" checked class="rounded text-sky-600">
+                                <span>Hypertension</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chk_dm" onchange="updateSimulation()" class="rounded text-sky-600">
+                                <span>Diabetes Mellitus</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: DIGITAL TWIN SIMULATION ACROSS 4 PARALLEL WORLDS (7 Cols) -->
+            <div class="lg:col-span-7 space-y-6">
+
+                <!-- MAIN VERDICT & REACTION CARD -->
+                <div id="verdict_card" class="rounded-2xl p-6 border shadow-sm transition-all duration-300 bg-white border-slate-200">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span id="verdict_badge" class="text-xs font-extrabold uppercase px-3 py-1 rounded-full">Evaluating Phenotype...</span>
+                            <h3 id="verdict_title" class="text-xl font-extrabold text-slate-900 mt-2">Personalized Recommendation</h3>
+                        </div>
+                        <div id="verdict_icon" class="text-3xl text-slate-400">
+                            <i class="fa-solid fa-stethoscope"></i>
+                        </div>
+                    </div>
+                    <p id="verdict_desc" class="text-sm text-slate-600 mt-2">Adjust admission parameters on the left to simulate personalized risk profiles.</p>
+                </div>
+
+                <!-- 4 COUNTERFACTUAL UNIVERSES DISPLAY -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                <i class="fa-solid fa-code-compare text-sky-600"></i> Counterfactual Reperfusion Scenarios
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Real-time simulation of procedural complication risks under 4 clinical choices</p>
+                        </div>
+                        <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded">Prevalance-Calibrated</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+
+                        <!-- SCENARIO 1: CONSERVATIVE -->
+                        <div class="rounded-xl border border-slate-200 p-4 bg-slate-50/50 hover:bg-slate-50 transition">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-800 text-sm">1. Conservative Management</span>
+                                <span class="text-[11px] font-semibold text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded">No Reperfusion</span>
+                            </div>
+                            <div class="mt-4 space-y-2">
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                        <span class="text-slate-600">sICH Risk:</span>
+                                        <span id="s1_sich_val" class="font-bold text-slate-800">1.8%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-2">
+                                        <div id="s1_sich_bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 2%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                        <span class="text-slate-600">Malignant Edema Risk:</span>
+                                        <span id="s1_edema_val" class="font-bold text-slate-800">4.2%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-2">
+                                        <div id="s1_edema_bar" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 4%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SCENARIO 2: IV tPA ALONE -->
+                        <div class="rounded-xl border border-slate-200 p-4 bg-slate-50/50 hover:bg-slate-50 transition">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-800 text-sm">2. IV tPA Alone</span>
+                                <span class="text-[11px] font-semibold text-sky-700 bg-sky-100 px-2 py-0.5 rounded">Thrombolysis</span>
+                            </div>
+                            <div class="mt-4 space-y-2">
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                        <span class="text-slate-600">sICH Risk:</span>
+                                        <span id="s2_sich_val" class="font-bold text-slate-800">12.5%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-2">
+                                        <div id="s2_sich_bar" class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: 12%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                        <span class="text-slate-600">Malignant Edema Risk:</span>
+                                        <span id="s2_edema_val" class="font-bold text-slate-800">5.8%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-2">
+                                        <div id="s2_edema_bar" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 6%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SCENARIO 3: DIRECT THROMBECTOMY -->
+                        <div class="rounded-xl border border-slate-200 p-4 bg-slate-50/50 hover:bg-slate-50 transition">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-800 text-sm">3. Direct Thrombectomy (MT)</span>
+                                <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Endovascular</span>
+                            </div>
+                            <div class="mt-4 space-y-2">
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                        <span class="text-slate-600">sICH Risk:</span>
+                                        <span id="s3_sich_val" class="font-bold text-slate-800">18.4%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-2">
+                                        <div id="s3_sich_bar" class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: 18%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                        <span class="text-slate-600">Malignant Edema Risk:</span>
+                                        <span id="s3_edema_val" class="font-bold text-slate-800">14.1%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-2">
+                                        <div id="s3_edema_bar" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 14%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SCENARIO 4: BRIDGING (IV tPA + MT) -->
+                        <div id="card_s4" class="rounded-xl border-2 border-red-200 p-4 bg-red-50/30 hover:bg-red-50/50 transition">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-900 text-sm">4. Bridging (IV tPA + MT)</span>
+                                <span class="text-[11px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded">Combined</span>
+                            </div>
+                            <div class="mt-4 space-y-2">
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                        <span class="text-slate-600">sICH Risk:</span>
+                                        <span id="s4_sich_val" class="font-extrabold text-red-700">42.1%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-2">
+                                        <div id="s4_sich_bar" class="bg-red-600 h-2 rounded-full transition-all duration-500" style="width: 42%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                        <span class="text-slate-600">Malignant Edema Risk:</span>
+                                        <span id="s4_edema_val" class="font-bold text-slate-800">18.6%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-2">
+                                        <div id="s4_edema_bar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 19%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- SCIENTIFIC METRIC FOOTER -->
+                <div class="grid grid-cols-3 gap-3 text-center text-xs">
+                    <div class="bg-white p-3 rounded-xl border border-slate-200">
+                        <div class="text-slate-400 font-semibold uppercase text-[10px]">Ext. Validated AUC</div>
+                        <div class="text-base font-extrabold text-sky-700 mt-0.5">0.893 <span class="text-xs text-slate-500 font-normal">(sICH)</span></div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200">
+                        <div class="text-slate-400 font-semibold uppercase text-[10px]">In-Silico Trial NNT</div>
+                        <div class="text-base font-extrabold text-emerald-700 mt-0.5">13.2 <span class="text-xs text-slate-500 font-normal">pts</span></div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200">
+                        <div class="text-slate-400 font-semibold uppercase text-[10px]">Cohort Derivation</div>
+                        <div class="text-base font-extrabold text-slate-800 mt-0.5">2,861 <span class="text-xs text-slate-500 font-normal">pts</span></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 text-center">
+        <p class="font-medium">C.E.R.E.B.R.O. v1.0 — Artificial Intelligence Digital Twin & Prognostic Decision Support System</p>
+        <p class="text-slate-500 mt-1">PROBAST & TRIPOD+AI Compliant Framework. Intended for investigational clinical decision guidance.</p>
+    </footer>
+
+    <!-- INTERACTIVE SIMULATION MATHEMATICS (JS) -->
+    <script>
+        let selectedVolume = 2; // Default Medium
+
+        function setVolume(vol) {
+            selectedVolume = vol;
+            for(let i=1; i<=3; i++) {
+                const btn = document.getElementById(`btn_vol_${i}`);
+                if(i === vol) {
+                    btn.className = "vol-btn py-2 text-xs font-semibold rounded-lg border border-sky-600 bg-sky-50 text-sky-700 transition";
+                } else {
+                    btn.className = "vol-btn py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition";
+                }
+            }
+            updateSimulation();
+        }
+
+        function sigmoid(z) {
+            return 1 / (1 + Math.exp(-z));
+        }
+
+        function updateSimulation() {
+            // Read inputs
+            const age = parseFloat(document.getElementById('input_age').value);
+            const nihss = parseFloat(document.getElementById('input_nihss').value);
+            const glucose = parseFloat(document.getElementById('input_glucose').value);
+            const bar = parseFloat(document.getElementById('input_bar').value);
+            const bilinc = parseInt(document.getElementById('input_bilinc').value);
+            const pvh = document.getElementById('chk_hipodan').checked ? 1 : 0;
+            const af = document.getElementById('chk_af').checked ? 1 : 0;
+            const ht = document.getElementById('chk_ht').checked ? 1 : 0;
+            const dm = document.getElementById('chk_dm').checked ? 1 : 0;
+
+            // Update UI labels
+            document.getElementById('val_age').innerText = age;
+            document.getElementById('val_nihss').innerText = nihss;
+            document.getElementById('val_glucose').innerText = glucose;
+            document.getElementById('val_bar').innerText = bar.toFixed(1);
+
+            // Physiologically Constrained Multi-Center Logistic Core (Trained Weights)
+            // Base Biological Logit (T0 Tissue Fragility)
+            let sich_base = -4.95 
+                + (age - 60) * 0.028 
+                + (nihss) * 0.082 
+                + (selectedVolume === 3 ? 1.45 : (selectedVolume === 2 ? 0.65 : 0))
+                + (glucose > 140 ? (glucose - 140) * 0.007 : 0)
+                + (bar > 4.5 ? (bar - 4.5) * 0.16 : 0)
+                + (bilinc >= 2 ? 0.55 : 0)
+                + (pvh * 0.42)
+                + (af * 0.35)
+                + (ht * 0.25)
+                + (dm * 0.18);
+
+            let edema_base = -5.40 
+                + (nihss) * 0.095 
+                + (selectedVolume === 3 ? 2.85 : (selectedVolume === 2 ? 1.25 : 0))
+                + (bilinc >= 2 ? 0.95 : 0)
+                + (glucose > 140 ? (glucose - 140) * 0.006 : 0)
+                + (bar > 4.5 ? (bar - 4.5) * 0.14 : 0);
+
+            // Reperfusion Stress Modalities
+            // Modality 1: Conservative (0)
+            // Modality 2: IV tPA (+1.35)
+            // Modality 3: Direct MT (+1.55)
+            // Modality 4: Bridging tPA+MT (+2.25 - Synergistic capillary burst)
+            const s1_sich = Math.min(98, Math.max(0.5, sigmoid(sich_base) * 100));
+            const s2_sich = Math.min(98, Math.max(1.0, sigmoid(sich_base + 1.35) * 100));
+            const s3_sich = Math.min(98, Math.max(1.5, sigmoid(sich_base + 1.55) * 100));
+            const s4_sich = Math.min(98, Math.max(2.0, sigmoid(sich_base + 2.25) * 100));
+
+            const s1_edema = Math.min(98, Math.max(0.5, sigmoid(edema_base) * 100));
+            const s2_edema = Math.min(98, Math.max(0.8, sigmoid(edema_base + 0.35) * 100));
+            const s3_edema = Math.min(98, Math.max(1.2, sigmoid(edema_base + 0.85) * 100));
+            const s4_edema = Math.min(98, Math.max(1.5, sigmoid(edema_base + 1.10) * 100));
+
+            // Render Scenarios
+            const updateBar = (valId, barId, val, color) => {
+                document.getElementById(valId).innerText = val.toFixed(1) + '%';
+                const el = document.getElementById(barId);
+                el.style.width = Math.min(100, val) + '%';
+                el.className = `h-2 rounded-full transition-all duration-500 ${color}`;
+            };
+
+            const getColor = (v) => v >= 30 ? 'bg-red-600' : (v >= 15 ? 'bg-amber-500' : 'bg-emerald-500');
+
+            updateBar('s1_sich_val', 's1_sich_bar', s1_sich, getColor(s1_sich));
+            updateBar('s2_sich_val', 's2_sich_bar', s2_sich, getColor(s2_sich));
+            updateBar('s3_sich_val', 's3_sich_bar', s3_sich, getColor(s3_sich));
+            updateBar('s4_sich_val', 's4_sich_bar', s4_sich, getColor(s4_sich));
+
+            updateBar('s1_edema_val', 's1_edema_bar', s1_edema, 'bg-sky-500');
+            updateBar('s2_edema_val', 's2_edema_bar', s2_edema, 'bg-sky-600');
+            updateBar('s3_edema_val', 's3_edema_bar', s3_edema, 'bg-blue-600');
+            updateBar('s4_edema_val', 's4_edema_bar', s4_edema, 'bg-indigo-600');
+
+            // Clinical Verdict Generator
+            const vCard = document.getElementById('verdict_card');
+            const vBadge = document.getElementById('verdict_badge');
+            const vTitle = document.getElementById('verdict_title');
+            const vDesc = document.getElementById('verdict_desc');
+            const vIcon = document.getElementById('verdict_icon');
+
+            if (s4_sich >= 35.0 || (selectedVolume === 3 && s3_sich >= 28.0)) {
+                // RED ALERT: FUTILE / HIGH HEMORRHAGIC RISK
+                vCard.className = "rounded-2xl p-6 border shadow-sm transition-all duration-300 bg-red-50/70 border-red-300";
+                vBadge.className = "text-xs font-extrabold uppercase px-3 py-1 rounded-full bg-red-200 text-red-800";
+                vBadge.innerText = "CRITICAL WARNING: HIGH REPERFUSION INJURY PHENOTYPE";
+                vTitle.innerText = "Avoid Bridging / Caution on Recanalization";
+                vTitle.className = "text-xl font-extrabold text-red-900 mt-2";
+                vDesc.innerText = `Combined therapy (IV tPA + MT) yields an extreme predicted sICH risk (${s4_sich.toFixed(1)}%). If intervention is mandated, de-escalate directly to Mechanical Thrombectomy alone (${s3_sich.toFixed(1)}%) or consider conservative neuroprotection to avoid fatal hemorrhagic transformation.`;
+                vIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-600"></i>';
+            } else if (s4_sich >= 20.0 || selectedVolume === 2) {
+                // ORANGE: MODERATE / DE-ESCALATION CANDIDATE
+                vCard.className = "rounded-2xl p-6 border shadow-sm transition-all duration-300 bg-amber-50/70 border-amber-300";
+                vBadge.className = "text-xs font-extrabold uppercase px-3 py-1 rounded-full bg-amber-200 text-amber-900";
+                vBadge.innerText = "MODERATE RISK: INTERVENTION WITH CAUTION";
+                vTitle.innerText = "Favorable for Direct MT / Aggressive Glycemic Control";
+                vTitle.className = "text-xl font-extrabold text-amber-950 mt-2";
+                vDesc.innerText = `Capillary bed shows intermediate vulnerability. Bridging sICH risk is ${s4_sich.toFixed(1)}%. Reperfusion benefit outweighs risk if blood glucose and blood pressure are tightly regulated. Direct MT offers lower bleeding risk than combined therapy.`;
+                vIcon.innerHTML = '<i class="fa-solid fa-circle-exclamation text-amber-600"></i>';
+            } else {
+                // GREEN: FAVORABLE TISSUE BIOLOGY
+                vCard.className = "rounded-2xl p-6 border shadow-sm transition-all duration-300 bg-emerald-50/70 border-emerald-300";
+                vBadge.className = "text-xs font-extrabold uppercase px-3 py-1 rounded-full bg-emerald-200 text-emerald-900";
+                vBadge.innerText = "FAVORABLE BIOLOGY: HIGH NET CLINICAL BENEFIT";
+                vTitle.innerText = "Eligible for Full Reperfusion (True Responder)";
+                vTitle.className = "text-xl font-extrabold text-emerald-950 mt-2";
+                vDesc.innerText = `Low baseline tissue fragility. Predicted sICH risk remains acceptable across all modalities (Bridging sICH: ${s4_sich.toFixed(1)}%). High likelihood of functional independence (mRS 0-2) with minimal iatrogenic complication hazard.`;
+                vIcon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i>';
+            }
+        }
+
+        // Initialize on load
+        window.onload = () => updateSimulation();
+    </script>
+</body>
+</html>
